@@ -1,13 +1,25 @@
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: DAST.gitlab-ci.yml
+
+variables:
+  SAST_EXPERIMENTAL_FEATURES: "true"
+  DAST_WEBSITE: http://www.example.com
+  DAST_FULL_SCAN_ENABLED: "true" 
+  DAST_BROWSER_SCAN: "true"
+
 stages:
-    - runSASTScanUsingSonarCloud
-    - runSCAScanUsingSnyk
-    - runDASTScanUsingZAP
+  - test
+  - runSASTScanUsingSonarCloud
+  - runSCAScanUsingSnyk
+  - runDASTScanUsingZAP
+  - dast
 
 run-sast-job:
     stage: runSASTScanUsingSonarCloud
     image: maven:3.8.5-openjdk-11-slim
     script: |
-      mvn verify package sonar:sonar -Dsonar.host.url=https://sonarcloud.io/ -Dsonar.organization=gitlabdevsecopsintegration -Dsonar.projectKey=gitlabdevsecopsintegration -Dsonar.login=2fda8f4a1af600afbede42c54c868083d8e34c01  
+      mvn verify package sonar:sonar -Dsonar.host.url=https://sonarcloud.io/ -Dsonar.organization=gitlabdevsecopsintegrationkey -Dsonar.projectKey=gitlabdevsecopsintegrationkey -Dsonar.login=9ff892826b54980437f4fb0fbc72f4049ec97585 
 
 run-sca-job:
     stage: runSCAScanUsingSnyk
@@ -16,7 +28,7 @@ run-sca-job:
       SNYK_TOKEN='2f4afa39-c493-4c6d-b34e-080c1a8f9014'
       export SNYK_TOKEN
       mvn snyk:test -fn 
-
+      
 run-dast-job:
     stage: runDASTScanUsingZAP
     image: maven:3.8.5-openjdk-11-slim
@@ -30,4 +42,4 @@ run-dast-job:
       ./zap.sh -cmd -quickurl https://www.example.com -quickprogress -quickout ../zap_report.html 
     artifacts:
       paths:
-        - zap_report.html
+        - zap_report.html 
